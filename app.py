@@ -1,11 +1,3 @@
-# =============================================================================
-# SISTEM PAKAR PENENTUAN GAYA BELAJAR SISWA
-# Metode: Forward Chaining | Sumber: Aditasari dkk. (2020) ITJRD Vol.5 No.1
-# Adaptasi berbasis Python + Streamlit (sistem asli jurnal menggunakan PHP/MySQL)
-# Redesign UI/UX Modern - 2026
-# =============================================================================
-
-# ── 1. IMPORT ─────────────────────────────────────────────────────────────────
 import streamlit as st
 import pandas as pd
 from fpdf import FPDF
@@ -14,7 +6,7 @@ import re
 import base64
 import os
 
-# ── 2. KONFIGURASI ────────────────────────────────────────────────────────────
+# Konfigurasi Halaman
 st.set_page_config(
     page_title="Kenali Gaya Belajarmu - Sistem Pakar Gaya Belajar Siswa",
     page_icon="📚",
@@ -22,15 +14,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Ubah ke True untuk menampilkan menu akademik (Basis Pengetahuan & Metode)
+# Set True untuk menampilkan menu akademik (Basis Pengetahuan & Metode)
 SHOW_ACADEMIC_MODE = False
 
-# ── 3. CSS MODERN & DESIGN SYSTEM ──────────────────────────────────────────────
+# CSS Custom
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Force Light Mode and Set Global Typography */
+/* Global Styles */
 :root {
     --bg-light: #EAF4F7;
     --bg-soft: #F7FBFD;
@@ -48,12 +40,11 @@ html, body, .stApp {
     color: var(--navy) !important;
 }
 
-/* Set font for all elements to match the button font */
 * {
     font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif !important;
 }
 
-/* Restore icon fonts using attribute selectors (higher specificity than *) */
+/* Icons */
 [data-testid*="Icon"], 
 [class*="Icon"],
 [class*="icon"],
@@ -74,7 +65,7 @@ html, body, .stApp {
     background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%, 100% 100% !important;
 }
 
-/* Background decorative shapes */
+/* Decorative background */
 .stApp::before {
     content: '';
     position: fixed;
@@ -105,7 +96,7 @@ html, body, .stApp {
     z-index: 0;
 }
 
-/* --- SIDEBAR CUSTOMIZATION --- */
+/* Sidebar Custom */
 [data-testid="stSidebar"] {
     background-color: var(--bg-soft) !important;
     border-right: 1px solid var(--border) !important;
@@ -117,17 +108,14 @@ html, body, .stApp {
     max-width: 260px !important;
 }
 
-/* Make Sidebar not scrollable */
 [data-testid="stSidebarContent"], [data-testid="stSidebarUserContent"] {
     overflow: hidden !important;
 }
 
-/* Hide Radio Label */
 [data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stWidgetLabel"] {
     display: none !important;
 }
 
-/* Sidebar Radio Wrapper */
 [data-testid="stSidebar"] [data-testid="stRadio"] {
     width: 100% !important;
 }
@@ -141,12 +129,10 @@ html, body, .stApp {
     margin: 0 !important;
 }
 
-/* Hide Streamlit Radio Circle Icons */
 [data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {
     display: none !important;
 }
 
-/* Style Sidebar Radio Option as Full-Pill Buttons */
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     background: rgba(255, 255, 255, 0.7) !important;
     color: #07164A !important;
@@ -173,7 +159,6 @@ html, body, .stApp {
     width: 100% !important;
 }
 
-/* Radio Text Styling */
 [data-testid="stSidebar"] [data-testid="stRadio"] label p,
 [data-testid="stSidebar"] [data-testid="stRadio"] label span {
     font-size: 0.92rem !important;
@@ -188,7 +173,6 @@ html, body, .stApp {
     line-height: 1.3 !important;
 }
 
-/* Hover State for Non-Active Radio */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
     background: #DFF2FA !important;
     transform: translateY(-2px) !important;
@@ -202,7 +186,6 @@ html, body, .stApp {
     opacity: 1 !important;
 }
 
-/* Active Radio Style — selected pill */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
     background: linear-gradient(135deg, #2D9CDB 0%, #3B82F6 55%, #C7356D 100%) !important;
     box-shadow: 0 8px 20px rgba(45, 156, 219, 0.3) !important;
@@ -220,8 +203,7 @@ html, body, .stApp {
     box-shadow: 0 12px 26px rgba(45, 156, 219, 0.38) !important;
 }
 
-/* --- BUTTONS --- */
-/* Target all Streamlit standard, download, and form buttons */
+/* Buttons */
 div.stButton > button, 
 div.stDownloadButton > button, 
 div.stFormSubmitButton > button,
@@ -258,7 +240,6 @@ div.stFormSubmitButton > button:active {
     transform: translateY(0) !important;
 }
 
-/* Outline/Soft Blue Button for Back / Reset buttons */
 .st-key-btn_kembali_tes button, 
 .st-key-btn_ulangi_tes button {
     background: #EAF4F7 !important;
@@ -274,7 +255,6 @@ div.stFormSubmitButton > button:active {
     transform: translateY(-2px) !important;
 }
 
-/* Center Buttons Align */
 .center-btn-container {
     display: flex !important;
     justify-content: center !important;
@@ -283,7 +263,7 @@ div.stFormSubmitButton > button:active {
     padding: 16px 0 !important;
 }
 
-/* --- TYPOGRAPHY & LAYOUT --- */
+/* Typography & Layout */
 .hero-container {
     background: linear-gradient(135deg, #EAF4F7 0%, #F7FBFD 55%, #E8ECFF 100%);
     border-radius: 24px;
@@ -375,7 +355,7 @@ div.stFormSubmitButton > button:active {
     margin: 28px 0 16px;
 }
 
-/* --- CARDS & HOVER EFFECTS --- */
+/* Cards */
 .card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
@@ -414,7 +394,6 @@ div.stFormSubmitButton > button:active {
     border-color: rgba(45, 156, 219, 0.2);
 }
 
-/* Test page container and category header */
 .test-container {
     width: 100% !important;
 }
@@ -441,19 +420,18 @@ div.stFormSubmitButton > button:active {
     margin: 0 !important;
 }
 
-/* Restrict the main content container to 1100px max width on the Test page */
 [data-testid="stAppViewBlockContainer"]:has(.test-container) {
     max-width: 1100px !important;
     margin: 0 auto !important;
+    padding-top: 2rem !important;
 }
 
-/* ── OPTION CARD GRID: equal-height columns ──────────────────────────────── */
+/* Option Card Grid */
 [data-testid="stHorizontalBlock"]:has(div[data-testid="stCheckbox"]) {
     align-items: stretch !important;
     margin-bottom: 12px !important;
 }
 
-/* L1 — column: force equal width via flex basis 0 */
 [data-testid="stHorizontalBlock"]:has(div[data-testid="stCheckbox"]) > [data-testid="column"] {
     display: flex !important;
     flex-direction: column !important;
@@ -461,21 +439,19 @@ div.stFormSubmitButton > button:active {
     min-width: 0 !important;
 }
 
-/* L2 — stVerticalBlock (Streamlit inserts this between column and element-container) */
 [data-testid="stHorizontalBlock"]:has(div[data-testid="stCheckbox"]) > [data-testid="column"] > div {
     flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
 }
 
-/* L3 — element-container or any nested wrapper */
 [data-testid="stHorizontalBlock"]:has(div[data-testid="stCheckbox"]) > [data-testid="column"] > div > div {
     flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
 }
 
-/* ── CHECKBOX CARD STYLE ─────────────────────────────────────────────────── */
+/* Checkbox Card Style */
 div[data-testid="stCheckbox"] {
     background: #FFFFFF !important;
     border: 1.5px solid #D6E3EA !important;
@@ -484,12 +460,11 @@ div[data-testid="stCheckbox"] {
     margin-bottom: 0 !important;
     transition: all 0.25s ease !important;
     box-shadow: 0 4px 14px rgba(7, 22, 74, 0.05) !important;
-    /* FIXED dimensions — guarantees identical size for every card */
     width: 100% !important;
     min-width: 0 !important;
-    height: 76px !important;        /* fixed, not min-height */
+    height: 76px !important;
     max-height: 76px !important;
-    overflow: hidden !important;    /* clip if text somehow overflows */
+    overflow: hidden !important;
     flex: 1 1 auto !important;
     display: flex !important;
     align-items: center !important;
@@ -520,7 +495,6 @@ div[data-testid="stCheckbox"] label {
     cursor: pointer !important;
 }
 
-/* Text span */
 div[data-testid="stCheckbox"] label > span:last-child {
     flex: 1 !important;
     min-width: 0 !important;
@@ -534,13 +508,12 @@ div[data-testid="stCheckbox"] label > span:last-child {
     white-space: normal !important;
 }
 
-/* Native checkbox: only safe overrides */
 div[data-testid="stCheckbox"] label input[type="checkbox"] {
     accent-color: #2D9CDB !important;
     flex-shrink: 0 !important;
 }
 
-/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+/* Responsive Layout */
 @media (max-width: 900px) {
     [data-testid="stHorizontalBlock"]:has(div[data-testid="stCheckbox"]) {
         flex-direction: column !important;
@@ -556,7 +529,7 @@ div[data-testid="stCheckbox"] label input[type="checkbox"] {
     }
 }
 
-/* Input Fields */
+/* Form Inputs */
 .stTextInput label, .stSelectbox label {
     color: var(--navy) !important;
     font-weight: 600 !important;
@@ -576,7 +549,7 @@ div[data-testid="stCheckbox"] label input[type="checkbox"] {
     border-color: var(--primary-blue) !important;
 }
 
-/* Progress bar container */
+/* Progress Bar */
 .prog-bg {
     background: var(--border);
     border-radius: 12px;
@@ -598,7 +571,7 @@ div[data-testid="stCheckbox"] label input[type="checkbox"] {
     transition: width 0.3s ease;
 }
 
-/* Badges for status and levels */
+/* Badges */
 .badge {
     display: inline-block;
     padding: 5px 14px;
@@ -620,7 +593,7 @@ div[data-testid="stCheckbox"] label input[type="checkbox"] {
 .b-part { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
 .b-mix  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
 
-/* Ciri Chips */
+/* Chips */
 .ciri-chip {
     background: var(--white) !important;
     border: 1px solid var(--border) !important;
@@ -638,16 +611,15 @@ div[data-testid="stCheckbox"] label input[type="checkbox"] {
     transform: translateY(-1px) !important;
 }
 
-/* --- SEMBUNYIKAN TOMBOL DOWNLOAD PADA TOOLBAR TABEL --- */
+/* Hide Table Toolbar */
 [data-testid="stElementToolbar"] {
     display: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ── 4. FAKTA ASLI (Tabel 9 Jurnal) ───────────────────────────────────────────
-# Rule diadaptasi dari Tabel 8 jurnal; daftar fakta dari Tabel 9 jurnal.
-# C69 tidak digunakan (tidak ada dalam daftar fakta jurnal).
+# Daftar Fakta Asli (Tabel 9 Jurnal)
+# Referensi rule dari Tabel 8 & fakta dari Tabel 9 jurnal. C69 dilewati karena tidak di daftar fakta.
 fakta_asli = {
     "C45":"Suka dengan diskusi kelompok",
     "C46":"Suka pelajaran yang berkelompok",
@@ -684,7 +656,7 @@ fakta_asli = {
     "C79":"Kurang cakap dalam mengarang",
 }
 
-# ── 5. FAKTA TAMPILAN (bahasa ramah siswa) ────────────────────────────────────
+# Fakta Tampilan (Bahasa Ramah Siswa)
 fakta_tampil = {
     "C45":"Saya suka belajar atau berdiskusi dalam kelompok",
     "C46":"Saya lebih nyaman dengan pelajaran yang dikerjakan berkelompok",
@@ -721,7 +693,7 @@ fakta_tampil = {
     "C79":"Saya merasa kurang cakap dalam menulis atau mengarang",
 }
 
-# ── 6. KATEGORI PERTANYAAN ────────────────────────────────────────────────────
+# Kategori Pertanyaan
 kategori_pertanyaan = {
     "Cara Menerima Informasi": ["C53","C56","C55","C57","C59","C61","C65","C70"],
     "Cara Belajar & Memproses Materi": ["C49","C50","C54","C58","C62","C67","C72","C74","C76","C79"],
@@ -729,7 +701,7 @@ kategori_pertanyaan = {
     "Kecenderungan Berpikir & Konsentrasi": ["C51","C52","C63","C68","C75"],
 }
 
-# ── 7. RULE BASE (Tabel 8 Jurnal) – JANGAN DIUBAH ────────────────────────────
+# Rule Base (Tabel 8 Jurnal) - JANGAN DIUBAH
 aturan = {
     "Visual":        ["C53","C56","C49","C51","C66","C74"],
     "Auditori":      ["C45","C59","C61","C63","C79"],
@@ -740,8 +712,8 @@ aturan = {
     "Intrapersonal": ["C50","C64","C71","C77"],
 }
 
-# ── 8. INFO & WARNA GAYA BELAJAR ──────────────────────────────────────────────
-# Memakai palette PPT: Visual (#2D9CDB), Auditori (#6C63FF), Kinestetik (#F28C28), Verbal (#C7356D), Logis (#10B981), Interpersonal (#14A3A3), Intrapersonal (#07164A)
+# Info & Warna Gaya Belajar
+# Palette: Visual (#2D9CDB), Auditori (#6C63FF), Kinestetik (#F28C28), Verbal (#C7356D), Logis (#10B981), Interpersonal (#14A3A3), Intrapersonal (#07164A)
 info_gaya = {
     "Visual":        {"emoji":"🎨","hex":"#2D9CDB","badge":"b-visual",
                       "bg":"linear-gradient(135deg,#EAF4F7,#DFF2FA)",
@@ -754,7 +726,7 @@ info_gaya = {
     "Kinestetik":    {"emoji":"🏃","hex":"#F28C28","badge":"b-kinestetik",
                       "bg":"linear-gradient(135deg,#FFF7ED,#FFE8D1)",
                       "short":"Belajar lebih efektif lewat praktik, gerakan, dan aktivitas langsung.",
-                      "desk":"Kamu cenderung lebih mudah belajar melalui gerakan, praktik, aktivitas langsung, dan pengalaman nyata."},
+                      "desk":"Kamu cenderung lebih mudah belajar melalui gerakan, praktik, aktivitas langsung, and pengalaman nyata."},
     "Verbal":        {"emoji":"📝","hex":"#C7356D","badge":"b-verbal",
                       "bg":"linear-gradient(135deg,#FFF0F6,#FFDEEB)",
                       "short":"Belajar kuat melalui membaca, menulis, berbicara, dan kata-kata.",
@@ -773,8 +745,7 @@ info_gaya = {
                       "desk":"Kamu cenderung lebih nyaman belajar sendiri, reflektif, dan memahami cara belajar pribadimu."},
 }
 
-# ── 9. REKOMENDASI BELAJAR ────────────────────────────────────────────────────
-# Rekomendasi belajar merupakan tambahan praktis berdasarkan karakteristik gaya belajar, bukan rule utama jurnal.
+# Rekomendasi Cara Belajar (tambahan di luar rule jurnal)
 rekomendasi = {
     "Visual": [
         "Gunakan mind map atau peta konsep untuk merangkum materi.",
@@ -827,7 +798,7 @@ rekomendasi = {
     ],
 }
 
-# ── 10. SESSION STATE INITIALIZATION ─────────────────────────────────────────
+# Session State Initialization
 if "menu" not in st.session_state:
     st.session_state["menu"] = "Beranda"
 if "pilihan_user" not in st.session_state:
@@ -839,12 +810,12 @@ if "identitas" not in st.session_state:
 if "step" not in st.session_state:
     st.session_state["step"] = 1
 
-# ── 11. FUNGSI NAVIGASI ───────────────────────────────────────────────────────
+# Fungsi Navigasi
 def pindah_halaman(nama_menu):
     st.session_state["menu"] = nama_menu
     st.rerun()
 
-# ── 12. FUNGSI INFERENSI FORWARD CHAINING ────────────────────────────────────
+# Inferensi Forward Chaining
 def hitung_hasil(pilihan_user):
     hasil = {}
     for gaya, daftar_kode in aturan.items():
@@ -859,9 +830,9 @@ def hitung_hasil(pilihan_user):
         }
     return hasil
 
-# ── 13. FUNGSI PDF ────────────────────────────────────────────────────────────
+# Fungsi PDF
 def bersihkan_teks_pdf(teks):
-    # Hapus emoji dan karakter non-latin-1 agar PDF tidak error
+    # Hapus emoji / karakter non-latin agar PDF tidak error
     teks = re.sub(r'[^\x00-\xFF]', '', teks)
     return teks.encode("latin-1", errors="replace").decode("latin-1")
 
@@ -885,11 +856,11 @@ def buat_pdf():
     pdf.add_page()
     pdf.set_margins(18, 20, 18)
 
-    # Header Banner - Navy Dark (#07164A)
+    # Header PDF
     pdf.set_fill_color(7, 22, 74)
     pdf.rect(0, 0, 210, 38, "F")
     
-    # Accent Line - Orange (#F28C28)
+    # Accent line
     pdf.set_fill_color(242, 140, 40)
     pdf.rect(0, 38, 210, 1.5, "F")
 
@@ -902,7 +873,7 @@ def buat_pdf():
     pdf.cell(0, 6, "Adaptasi Jurnal Penelitian IT Journal Research and Development Vol. 5, No. 1, 2020", align="C")
     pdf.ln(18)
 
-    # Identitas Section - Navy text on Soft Blue (#EAF4F7) background
+    # Section identitas
     pdf.set_text_color(7, 22, 74)
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_fill_color(234, 244, 247)
@@ -918,14 +889,14 @@ def buat_pdf():
         pdf.ln(7)
     pdf.ln(4)
 
-    # Hasil Identifikasi Section
+    # Section hasil
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_fill_color(234, 244, 247)
     pdf.cell(0, 8, "  HASIL IDENTIFIKASI GAYA BELAJAR", fill=True)
     pdf.ln(8)
     pdf.ln(2)
     pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(45, 156, 219) # Primary Blue (#2D9CDB)
+    pdf.set_text_color(45, 156, 219)
     label_gaya = bersihkan_teks_pdf(" & ".join(gaya_dominan) if len(gaya_dominan) > 1 else g_dom)
     pdf.cell(0, 9, f"  Gaya Belajar Dominan: {label_gaya}")
     pdf.ln(9)
@@ -938,7 +909,7 @@ def buat_pdf():
     
     pdf.set_font("Helvetica", "I", 10)
     pdf.set_text_color(7, 22, 74)
-    # Combined description for PDF if mixed
+    # Gabungkan deskripsi jika gaya belajar campuran
     if len(gaya_dominan) > 1:
         desc_pdf = " ".join([info_gaya[g]["desk"] for g in gaya_dominan])
     else:
@@ -946,7 +917,7 @@ def buat_pdf():
     pdf.multi_cell(0, 6, f"  {bersihkan_teks_pdf(desc_pdf)}")
     pdf.ln(5)
 
-    # Rekomendasi Section
+    # Section rekomendasi
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_fill_color(234, 244, 247)
     pdf.set_text_color(7, 22, 74)
@@ -954,13 +925,13 @@ def buat_pdf():
     pdf.ln(8)
     pdf.ln(2)
     pdf.set_font("Helvetica", "", 10)
-    # Loop over recommendations for dominant style (max 5 points)
+    # Ambil maksimal 5 rekomendasi
     for s in rekomendasi[g_dom][:5]:
         pdf.multi_cell(0, 6, f"  - {bersihkan_teks_pdf(s)}")
         pdf.ln(1)
     pdf.ln(4)
 
-    # Gaya Belajar Lain Section (if applicable)
+    # Section kecenderungan gaya belajar lain
     lain = [(g, d) for g, d in sorted_hasil if g not in gaya_dominan and d["persen"] > 0][:3]
     if lain:
         pdf.set_font("Helvetica", "B", 11)
@@ -974,7 +945,7 @@ def buat_pdf():
             pdf.ln(7)
         pdf.ln(4)
 
-    # Ciri-Ciri Yang Dipilih Section (NEW REQUIREMENT)
+    # Section ciri-ciri yang dipilih
     pilihan_user = st.session_state.get("pilihan_user", [])
     if pilihan_user:
         pdf.set_font("Helvetica", "B", 11)
@@ -989,7 +960,7 @@ def buat_pdf():
             pdf.ln(1)
         pdf.ln(4)
 
-    # Catatan & Disclaimer Section
+    # Section catatan penting
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_fill_color(254, 243, 199)
     pdf.set_text_color(146, 64, 14)
@@ -1006,7 +977,7 @@ def buat_pdf():
     
     return bytes(pdf.output())
 
-# ── 14. HALAMAN BERANDA ───────────────────────────────────────────────────────
+# Halaman Beranda
 def tampilkan_beranda():
     st.markdown("""
     <div class='hero-container'>
@@ -1017,7 +988,7 @@ def tampilkan_beranda():
     </div>
     """, unsafe_allow_html=True)
 
-    # Centered CTA Button
+    # Tombol mulai tes
     c_left, c_middle, c_right = st.columns([2, 1.4, 2])
     with c_middle:
         st.markdown("<div class='center-btn-container'>", unsafe_allow_html=True)
@@ -1027,7 +998,7 @@ def tampilkan_beranda():
 
     st.markdown("<div class='sec-title'>7 Gaya Belajar yang Diidentifikasi</div>", unsafe_allow_html=True)
 
-    # Display 7 learning style cards (3 columns grid layout)
+    # Grid 3 kolom untuk 7 gaya belajar
     gaya_list = list(info_gaya.items())
     for baris in range(0, len(gaya_list), 3):
         cols = st.columns(3)
@@ -1052,18 +1023,18 @@ def tampilkan_beranda():
     </div>
     """, unsafe_allow_html=True)
 
-# ── 15. HALAMAN TES GAYA BELAJAR ──────────────────────────────────────────────
+# Halaman Tes Gaya Belajar
 def tampilkan_tes():
     st.markdown("<div class='test-container'>", unsafe_allow_html=True)
     st.markdown("<div class='hero-title' style='font-size: 2.3rem; text-align: left;'>Tes Gaya Belajar</div>", unsafe_allow_html=True)
     st.markdown("<div class='hero-sub' style='text-align: left; margin-bottom: 24px; max-width: 100%;'>Isi data diri kamu dan jawab tes bertahap di bawah ini.</div>", unsafe_allow_html=True)
 
-    # Progress bar and steps helper
+    # Progress bar dan info langkah
     categories = list(kategori_pertanyaan.keys())
     step = st.session_state["step"]
     current_cat = categories[step - 1]
 
-    # Progress Bar Horizontal
+    # Render progress bar
     pct = int((step) / 4 * 100)
     st.markdown(f"""
     <div style='margin-bottom: 26px;'>
@@ -1077,7 +1048,7 @@ def tampilkan_tes():
     </div>
     """, unsafe_allow_html=True)
 
-    # --- STEP 1: IDENTITY & FIRST CATEGORY ---
+    # Langkah 1: Input identitas
     if step == 1:
         st.markdown("<div class='sec-title' style='margin-top:0; border-left-color: var(--primary-blue);'>Identitas Siswa</div>", unsafe_allow_html=True)
         
@@ -1093,7 +1064,7 @@ def tampilkan_tes():
             kelas = st.text_input("Kelas (opsional)", placeholder="Cth: XI IPA 2 atau Semester 4",
                                   value=st.session_state["identitas"].get("kelas", ""))
         
-        # Save identity to session state live
+        # Simpan identitas ke session state
         st.session_state["identitas"] = {
             "nama": nama,
             "jenjang": jenjang,
@@ -1101,7 +1072,7 @@ def tampilkan_tes():
             "tanggal": st.session_state["identitas"].get("tanggal", datetime.date.today().strftime("%d %B %Y"))
         }
 
-    # Instruction Card for current step
+    # Header kategori pertanyaan
     st.markdown(f"""
     <div class='category-header'>
         <div class='category-header-title'>{current_cat}</div>
@@ -1109,10 +1080,10 @@ def tampilkan_tes():
     </div>
     """, unsafe_allow_html=True)
 
-    # Checkboxes rendered in 2 Columns row-by-row for neat layout
+    # Checkbox 2 kolom
     kode_list = kategori_pertanyaan[current_cat]
 
-    # Helper function to save choices on transition
+    # Fungsi simpan pilihan
     def simpan_pilihan_langkah_aktif(step_num):
         cat_name = categories[step_num - 1]
         for k in kategori_pertanyaan[cat_name]:
@@ -1126,16 +1097,16 @@ def tampilkan_tes():
                     if k in st.session_state["pilihan_user"]:
                         st.session_state["pilihan_user"].remove(k)
 
-    # Render checkboxes in pairs of columns row-by-row
+    # Render checkbox dalam 2 kolom
     for i in range(0, len(kode_list), 2):
         row_cols = st.columns(2)
-        # Left item
+        # Kolom kiri
         k1 = kode_list[i]
         checked1 = k1 in st.session_state["pilihan_user"]
         with row_cols[0]:
             st.checkbox(fakta_tampil[k1], value=checked1, key=f"cb_{k1}")
         
-        # Right item
+        # Kolom kanan
         if i + 1 < len(kode_list):
             k2 = kode_list[i + 1]
             checked2 = k2 in st.session_state["pilihan_user"]
@@ -1144,7 +1115,7 @@ def tampilkan_tes():
 
     st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)
 
-    # Navigation Buttons
+    # Tombol navigasi
     c_btn1, c_btn2 = st.columns([1, 1])
 
     with c_btn1:
@@ -1159,7 +1130,7 @@ def tampilkan_tes():
     with c_btn2:
         if step < 4:
             if st.button("Lanjut", use_container_width=True):
-                # Validation on Step 1
+                # Validasi langkah 1
                 if step == 1:
                     nama_val = st.session_state["identitas"].get("nama", "").strip()
                     if not nama_val:
@@ -1173,7 +1144,7 @@ def tampilkan_tes():
             if st.button("Lihat Hasil Tes", use_container_width=True):
                 simpan_pilihan_langkah_aktif(4)
                 
-                # Final validations
+                # Validasi akhir
                 nama_val = st.session_state["identitas"].get("nama", "").strip()
                 pilihan = st.session_state["pilihan_user"]
                 
@@ -1182,17 +1153,17 @@ def tampilkan_tes():
                 elif not pilihan:
                     st.error("⚠️ Kamu belum memilih satu pun ciri. Pilih minimal 1 ciri untuk melihat hasil.")
                 else:
-                    # Perform Forward Chaining and navigate
+                    # Hitung hasil dan arahkan
                     st.session_state["hasil_tes"] = hitung_hasil(pilihan)
                     pindah_halaman("Hasil & Rekomendasi")
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ── 16. HALAMAN HASIL & REKOMENDASI ──────────────────────────────────────────
+# Halaman Hasil & Rekomendasi
 def tampilkan_hasil():
     st.markdown("<div class='hero-title' style='font-size: 2.3rem; text-align: left;'>Hasil Identifikasi Gaya Belajar</div>", unsafe_allow_html=True)
 
-    # Empty State Validation
+    # Validasi jika belum tes
     if not st.session_state["hasil_tes"] or not st.session_state["pilihan_user"]:
         st.markdown("""
         <div class='card' style='text-align: center; padding: 45px 30px; margin-top: 20px;'>
@@ -1215,7 +1186,7 @@ def tampilkan_hasil():
     identitas = st.session_state["identitas"]
     pilihan = st.session_state["pilihan_user"]
 
-    # Calculate top scoring styles
+    # Hitung gaya belajar dengan skor tertinggi
     sorted_hasil = sorted(hasil.items(), key=lambda x: x[1]["persen"], reverse=True)
     max_persen = sorted_hasil[0][1]["persen"]
     gaya_dominan = [g for g, d in sorted_hasil if d["persen"] == max_persen]
@@ -1223,11 +1194,11 @@ def tampilkan_hasil():
     g_dom = gaya_dominan[0]
     info = info_gaya[g_dom]
 
-    # Warning if too few choices
+    # Peringatan jika pilihan kurang dari 3
     if len(pilihan) < 3:
         st.warning("⚠️ Ciri-ciri yang kamu pilih kurang dari 3. Hasil mungkin kurang akurat atau kurang kuat mendeskripsikan gaya belajarmu.")
 
-    # Status Badges
+    # Badge status
     if max_persen == 100:
         status_txt, badge_class = "Seluruh ciri terpenuhi", "b-ok"
     elif len(gaya_dominan) > 1:
@@ -1235,7 +1206,7 @@ def tampilkan_hasil():
     else:
         status_txt, badge_class = "Kecenderungan tertinggi berdasarkan ciri yang dipilih", "b-part"
 
-    # Identity Chip Row
+    # Baris identitas
     kelas_str = f"&nbsp;&nbsp;•&nbsp;&nbsp;🎒 Kelas {identitas.get('kelas')}" if identitas.get("kelas") else ""
     st.markdown(f"""
     <div class='card' style='padding: 16px 24px; font-size: 0.98rem; color: #4B5563; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;'>
@@ -1245,7 +1216,7 @@ def tampilkan_hasil():
     </div>
     """, unsafe_allow_html=True)
 
-    # Style labels and description for mixed
+    # Label dan deskripsi gaya belajar
     if len(gaya_dominan) > 1:
         label_gaya = " & ".join(gaya_dominan)
         desk_gabung = " ".join([info_gaya[g]["desk"] for g in gaya_dominan])
@@ -1270,7 +1241,7 @@ def tampilkan_hasil():
     </div>
     """, unsafe_allow_html=True)
 
-    # Recommendations Section
+    # Bagian rekomendasi
     st.markdown("<div class='sec-title'>Rekomendasi Cara Belajar</div>", unsafe_allow_html=True)
     rek_points = rekomendasi[g_dom]
     
@@ -1286,7 +1257,7 @@ def tampilkan_hasil():
             """, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Bar chart - Kecocokan Semua Gaya Belajar (Pertahankan logika/visual asli tapi perindah detailnya)
+    # Chart kecocokan
     st.markdown("<div class='sec-title'>Kecocokan Semua Gaya Belajar</div>", unsafe_allow_html=True)
     bars = ""
     for g, d in sorted_hasil:
@@ -1306,7 +1277,7 @@ def tampilkan_hasil():
         </div>"""
     st.markdown(f"<div class='card' style='padding: 24px 28px;'>{bars}</div>", unsafe_allow_html=True)
 
-    # Chips for Selected Characteristics (NEW REQUIREMENT - no Cxx)
+    # Ciri-ciri yang dipilih
     st.markdown("<div class='sec-title'>Ciri-Ciri yang Kamu Pilih</div>", unsafe_allow_html=True)
     with st.expander("Lihat semua ciri yang kamu pilih dalam tes ini", expanded=True):
         if pilihan:
@@ -1325,12 +1296,12 @@ def tampilkan_hasil():
 
     st.markdown("<div style='height: 25px;'></div>", unsafe_allow_html=True)
 
-    # PDF Download and Reset Buttons Row
+    # Tombol unduh PDF dan reset
     c_dl, _, c_ul = st.columns([1.8, 2, 1.8])
     with c_dl:
         try:
             pdf_bytes = buat_pdf()
-            # Sanitasi nama untuk file name
+            # Sanitasi nama file
             nama_file = re.sub(r'[^a-z0-9_]', '', identitas.get("nama","pengguna").lower().replace(" ","_"))
             st.download_button(
                 "📥 Download Hasil PDF",
@@ -1347,7 +1318,7 @@ def tampilkan_hasil():
 
     with c_ul:
         if st.button("🔄 Ulangi Tes", key="btn_ulangi_tes", use_container_width=True):
-            # Reset states and rerun
+            # Reset state
             st.session_state["pilihan_user"] = []
             st.session_state["hasil_tes"] = None
             st.session_state["identitas"] = {"nama": "", "jenjang": "SMA/SMK", "kelas": ""}
@@ -1356,7 +1327,7 @@ def tampilkan_hasil():
                 st.session_state[f"cb_{k}"] = False
             pindah_halaman("Tes Gaya Belajar")
 
-# ── 17. HALAMAN TENTANG APLIKASI ──────────────────────────────────────────────
+# Halaman Tentang Aplikasi
 def tampilkan_tentang_aplikasi():
     st.markdown("<div class='hero-title' style='font-size: 2.5rem; text-align: left; margin-bottom: 8px;'>Tentang Aplikasi</div>", unsafe_allow_html=True)
     st.markdown("<div class='hero-sub' style='text-align: left; margin-bottom: 24px; max-width: 100%;'>Informasi mengenai aplikasi, landasan teori, dan pengembang.</div>", unsafe_allow_html=True)
@@ -1425,7 +1396,7 @@ def tampilkan_tentang_aplikasi():
         </div>
         """, unsafe_allow_html=True)
 
-    # ── INFORMASI AKADEMIK SISTEM ──────────────────────────────────────────────
+    # Informasi Akademik Sistem
     st.markdown("""
     <div style='margin-top: 36px; margin-bottom: 18px;'>
         <div style='display: flex; align-items: center; gap: 12px;'>
@@ -1438,7 +1409,7 @@ def tampilkan_tentang_aplikasi():
     </div>
     """, unsafe_allow_html=True)
 
-    # ── EXPANDER 1: BASIS PENGETAHUAN ─────────────────────────────────────────
+    # Expander Basis Pengetahuan
     with st.expander("📋 Lihat Basis Pengetahuan", expanded=False):
         st.markdown("""
         <div style='background: #F8FAFC; border: 1px solid #D6E3EA; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.93rem; color: #334155; line-height: 1.6;'>
@@ -1448,9 +1419,9 @@ def tampilkan_tentang_aplikasi():
         </div>
         """, unsafe_allow_html=True)
 
-        # Build facts table from existing dictionaries
+        # Susun tabel fakta
         rows_fakta = []
-        # Map each code to its related learning style (from aturan dict)
+        # Hubungkan kode ciri dengan gaya belajar
         kode_ke_gaya = {}
         for gaya, kl in aturan.items():
             for k in kl:
@@ -1467,7 +1438,7 @@ def tampilkan_tentang_aplikasi():
         df_fakta = pd.DataFrame(rows_fakta)
         st.dataframe(df_fakta, use_container_width=True, hide_index=True)
 
-    # ── EXPANDER 2: ATURAN INFERENSI ──────────────────────────────────────────
+    # Expander Aturan Inferensi
     with st.expander("⚙️ Lihat Aturan Inferensi", expanded=False):
         st.markdown("""
         <div style='background: #F8FAFC; border: 1px solid #D6E3EA; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.93rem; color: #334155; line-height: 1.6;'>
@@ -1477,7 +1448,7 @@ def tampilkan_tentang_aplikasi():
         </div>
         """, unsafe_allow_html=True)
 
-        # Table of rules
+        # Tabel aturan
         rows_rule = []
         rule_names = {"Visual": "R1", "Auditori": "R2", "Kinestetik": "R3",
                       "Verbal": "R4", "Logis": "R5", "Interpersonal": "R6", "Intrapersonal": "R7"}
@@ -1490,7 +1461,7 @@ def tampilkan_tentang_aplikasi():
         df_rule = pd.DataFrame(rows_rule)
         st.dataframe(df_rule, use_container_width=True, hide_index=True)
 
-        # Visual rule cards
+        # Kartu visual aturan
         st.markdown("<div style='margin-top: 20px; margin-bottom: 8px; font-weight: 700; color: #172033; font-size: 0.95rem;'>Visualisasi Aturan IF-THEN:</div>", unsafe_allow_html=True)
         rule_colors = {
             "Visual": "#2D9CDB", "Auditori": "#6C63FF", "Kinestetik": "#F28C28",
@@ -1513,7 +1484,7 @@ def tampilkan_tentang_aplikasi():
         cards_html += "</div>"
         st.markdown(cards_html, unsafe_allow_html=True)
 
-# ── 18. HALAMAN AKADEMIK (hanya jika SHOW_ACADEMIC_MODE = True) ───────────────
+# Halaman Akademik (SHOW_ACADEMIC_MODE = True)
 def tampilkan_basis_pengetahuan():
     st.markdown("<div class='hero-title' style='font-size:2rem;'>Basis Pengetahuan</div>", unsafe_allow_html=True)
     st.info("Halaman ini hanya ditampilkan dalam mode akademik.")
@@ -1542,14 +1513,14 @@ def tampilkan_metode():
     </div>
     """, unsafe_allow_html=True)
 
-# ── 19. SIDEBAR & ROUTING ────────────────────────────────────────────────────
+# Sidebar & Routing
 menu_utama = ["Beranda", "Tes Gaya Belajar", "Hasil & Rekomendasi", "Tentang Aplikasi"]
 menu_akademik = ["Basis Pengetahuan", "Metode Sistem"]
 
 menu_pilihan = menu_utama + (menu_akademik if SHOW_ACADEMIC_MODE else [])
 
 with st.sidebar:
-    # Circle Logo & Title Header
+    # Logo lingkaran & Judul
     _logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo.png")
     try:
         with open(_logo_path, "rb") as _f:
@@ -1570,7 +1541,7 @@ with st.sidebar:
     
     st.markdown("<div style='height: 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px;'></div>", unsafe_allow_html=True)
 
-    # Render Pills/Buttons using st.radio with custom CSS
+    # Render menu navigasi dengan st.radio
     idx_aktif = menu_pilihan.index(st.session_state["menu"]) if st.session_state["menu"] in menu_pilihan else 0
     menu_terpilih = st.radio(
         "Menu", menu_pilihan, index=idx_aktif,
@@ -1580,7 +1551,7 @@ with st.sidebar:
         st.session_state["menu"] = menu_terpilih
         st.rerun()
 
-    # Footer section
+    # Bagian footer
     st.markdown("""
     <div style='font-size: 0.78rem; color: #64748B; text-align: center; line-height: 1.6; margin-top: 50px; border-top: 1px solid #E2E8F0; padding-top: 16px;'>
         <b>Dikembangkan oleh Devi Andini</b><br>
